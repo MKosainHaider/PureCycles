@@ -1,0 +1,138 @@
+[
+    {
+        "id": 1,
+        "image": "/public/images/Products-Images/AdventureAL.jpeg",
+        "altText": "Adventure AL",
+        "name": "Adventure AL",
+        "price": "$849.99",
+        "type": "Bikes",
+        "categories": ["Mountain"]
+    },
+    {
+        "id": 2,
+        "image": "/public/images/Products-Images/CityClassic3speed.jpeg",
+        "altText": "City Classic 3-Speed",
+        "name": "City Classic 3-Speed",
+        "brand": "PURE CYCLES",
+        "price": "$689.99",
+        "type": "Bikes",
+        "categories": ["City"]
+    },
+    {
+        "id": 3,
+        "image": "/public/images/Products-Images/CityClassic8speed.jpeg",
+        "altText": "City Classic 8-Speed",
+        "name": "City Classic 8-Speed",
+        "brand": "PURE CYCLES",
+        "price": "$689.99",
+        "type": "Bikes",
+        "categories": ["City"]
+    },
+    {
+        "id": 4,
+        "image": "/public/images/Products-Images/CityStepThrough3Speed.jpeg",
+        "altText": "City Step-Through 3-Speed",
+        "name": "City Step-Through 3-Speed",
+        "price": "$599.99",
+        "type": "Bikes",
+        "categories": ["City"]
+    },
+    {
+        "id": 5,
+        "image": "/public/images/Products-Images/CityStepThrough8Speed.jpeg",
+        "altText": "City Step-Through 8-Speed",
+        "name": "City Step-Through 8-Speed",
+        "brand": "PURE CYCLES",
+        "price": "$659.99",
+        "type": "Bikes",
+        "categories": ["City"],
+        "colors": ["#008000", "#ffd700", "#6600cc"]
+    },
+    {
+        "id": 6,
+        "image": "/public/images/Products-Images/CityStepThrough26-3Speed.jpeg",
+        "altText": "City Step-Through 26'' 3-Speed",
+        "name": "City Step-Through 26'' 3-Speed",
+        "brand": "PURE CYCLES",
+        "price": "$699.99",
+        "type": "Bikes",
+        "categories": ["City"],
+        "colors": ["#008000", "#ffd700", "#6600cc"]
+    },
+    {
+        "id": 7,
+        "image": "/public/images/Products-Images/CityStepThrough26-8Speed.jpeg",
+        "altText": "City Step-Through 26'' 8-Speed",
+        "name": "City Step-Through 26'' 8-Speed",
+        "brand": "PURE CYCLES",
+        "price": "$699.99",
+        "type": "Bikes",
+        "categories": ["City"],
+        "colors": ["#00743e", "#ffd700", "#6600cc", "#4b0082"]
+    },
+    {
+        "id": 8,
+        "image": "/public/images/Products-Images/Coaster.jpeg",
+        "altText": "Coaster",
+        "name": "Coaster",
+        "brand": "PURE CYCLES",
+        "oldPrice": "$429.99",
+        "price": "$299.99",
+        "type": "Bikes",
+        "categories": ["Single Speed"],
+        "colors": ["#000000", "#C0C0C0", "#FFD700"]
+    },
+    {
+        "id": 9,
+        "image": "/public/images/Products-Images/Original.jpeg",
+        "altText": "Original Bike",
+        "name": "Original",
+        "brand": "PURE CYCLES",
+        "price": "$0.00",
+        "type": "Bikes",
+        "categories": ["Single Speed"],
+        "isSoldOut": true
+    },
+    {
+        "id": 10,
+        "image": "/public/images/Products-Images/purecycleoriginal.webp",
+        "altText": "Pure Cycles Original",
+        "name": "Pure Cycles Original",
+        "price": "$479.99",
+        "oldPrice": "$599.99",
+        "discount": "Save 20%",
+        "type": "Bikes",
+        "sale": true,
+        "categories": ["Single Speed"]
+    },
+    {
+        "id": 11,
+        "image": "/public/images/Products-Images/PureFixMicroOrignaalSeries.jpeg",
+        "altText": "Pure Fix Micro Original Series",
+        "name": "Pure Fix Micro Original Series",
+        "brand": "PURE CYCLES",
+        "price": "$599.99",
+        "type": "Bikes",
+        "categories": ["Single Speed"]
+    },
+    {
+        "id": 12,
+        "image": "/public/images/Products-Images/PureFixMicroOrignaalSeries.jpeg",
+        "altText": "Pure Fix Original",
+        "name": "Pure Fix Original",
+        "brand": "PURE CYCLES",
+        "price": "$599.99",
+        "type": "Bikes",
+        "categories": ["Single Speed"]
+    },
+    {
+        "id": 13,
+        "image": "/public/images/Products-Images/UrbanCommuterBike.jpeg",
+        "altText": "Urban Commuter Bike",
+        "name": "Urban Commuter Bike",
+        "price": "$899.99",
+        "type": "Bikes",
+        "categories": ["Commuter"]
+    }
+]
+ 
