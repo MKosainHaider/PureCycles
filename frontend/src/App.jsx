@@ -13,7 +13,7 @@ import AllBikesPage from "./pages/All Bikes/AllBikesPage.jsx";
 import AccessoriesPage from "./pages/Accessories/AccessoriesPage.jsx";
 import NotFoundPage from "./pages/NotFoundPage";
 import { RenderProductDetail } from "./utils/renderProductDetail.jsx";  
-import AdminDashboard from "./pages/Admin/AdminDashboard.jsx"; // Import the Admin Dashboard
+// import AdminDashboard from "./pages/Admin/AdminDashboard.jsx"; // Import the Admin Dashboard
 import { useAuth } from "./context/AuthContext"; // Import useAuth
 
 function App() {

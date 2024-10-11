@@ -1,104 +1,73 @@
 import Product from '../models/productModel.js';
 import Category from '../models/categoryModel.js';
 
-// Helper function to check if user is an admin
-const isAdmin = (user) => user.role === 'admin' || user.role === 'superadmin';
-
-// Create a new product (only admin)
 export const createProduct = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({ error: 'Access denied' });
-  }
-
-  const { name, price, description, stock_quantity, reorder_level, categoryName, image } = req.body; // Include image in destructuring
-
   try {
-    // Check if the category exists by name
-    const category = await Category.findOne({ name: categoryName });
-    if (!category) {
-      return res.status(404).json({ error: 'Category not found' });
+    const { name, description, price, sale, categoryName, subcategoryName } = req.body;
+
+    let category = null;
+    let subcategory = null;
+
+    // If subcategory name is provided, search for it
+    if (subcategoryName) {
+      if (categoryName) {
+        // If both category and subcategory are provided, find the category first
+        category = await Category.findOne({ name: categoryName });
+        if (!category) {
+          return res.status(404).json({ message: 'Category not found' });
+        }
+        subcategory = category.subcategories.find(sub => sub.name.toLowerCase() === subcategoryName.toLowerCase());
+      } else {
+        // If only subcategory is provided, find the category that contains the subcategory
+        category = await Category.findOne({ 'subcategories.name': subcategoryName });
+        if (category) {
+          subcategory = category.subcategories.find(sub => sub.name.toLowerCase() === subcategoryName.toLowerCase());
+        }
+      }
+
+      if (!subcategory) {
+        return res.status(404).json({ message: 'Subcategory not found' });
+      }
     }
 
-    // Create the new product
-    const newProduct = new Product({
+    // Check if the product already exists in the given subcategory
+    const existingProduct = await Product.findOne({ name, subcategory: subcategory?._id });
+    if (existingProduct) {
+      return res.status(400).json({ message: 'Product already exists in this subcategory' });
+    }
+
+    // Create a new product with the sale percentage and link to category/subcategory
+    const product = new Product({
       name,
-      price,
       description,
-      stock_quantity,
-      reorder_level,
-      category: category._id,
-      user: req.user._id, // Admin who added product
-      image, // Set the image field
+      price,
+      sale: sale || 0, // Sale percentage, default to 0 if not provided
+      category: category?._id || null, // If category exists, assign its ID, otherwise null
+      categoryName: category?.name || null,
+      subcategory: subcategory?._id || null, // If subcategory exists, assign its ID, otherwise null
+      subcategoryName: subcategory?.name || null,
     });
 
-    await newProduct.save();
-    res.status(201).json(newProduct);
+    await product.save();
+
+    // Return the created product data
+    res.status(201).json({
+      message: 'Product created successfully',
+      product: {
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        sale: product.sale,
+        discountedPrice: product.sale
+          ? (product.price - (product.price * product.sale) / 100).toFixed(2)
+          : product.price, // Calculate discounted price if sale exists
+        categoryId: product.category,
+        categoryName: product.categoryName,
+        subcategoryId: product.subcategory,
+        subcategoryName: product.subcategoryName,
+      }
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create product' });
-  }
-};
-
-// Get all products (Public)
-export const getProducts = async (req, res) => {
-  try {
-    const products = await Product.find().populate('category user');
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch products' });
-  }
-};
-
-// Get product by ID (Public)
-export const getProductById = async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id).populate('category user');
-    if (!product) return res.status(404).json({ error: 'Product not found' });
-    res.json(product);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch product' });
-  }
-};
-
-// Update a product (only admin)
-export const updateProduct = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({ error: 'Access denied' });
-  }
-
-  const { name, price, description, stock_quantity, reorder_level, categoryName, image } = req.body; // Include image in destructuring
-
-  try {
-    // Check if the category exists by name
-    const category = await Category.findOne({ name: categoryName });
-    if (!category) {
-      return res.status(404).json({ error: 'Category not found' });
-    }
-
-    // Update the product
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      { name, price, description, stock_quantity, reorder_level, category: category._id, image }, // Update image field
-      { new: true }
-    );
-
-    if (!updatedProduct) return res.status(404).json({ error: 'Product not found' });
-    res.json(updatedProduct);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update product' });
-  }
-};
-
-// Delete a product (only admin)
-export const deleteProduct = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({ error: 'Access denied' });
-  }
-
-  try {
-    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
-    if (!deletedProduct) return res.status(404).json({ error: 'Product not found' });
-    res.json({ message: 'Product deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete product' });
+    res.status(400).json({ message: error.message });
   }
 };

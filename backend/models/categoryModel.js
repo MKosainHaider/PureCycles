@@ -1,10 +1,15 @@
 import mongoose from 'mongoose';
 
-const categorySchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true }, // Unique category name
-  description: { type: String, required: true } // Description of the category
-}, {
-  timestamps: true // Automatically manage createdAt and updatedAt timestamps
+const subcategorySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: { type: String }
 });
 
-export default mongoose.model('Category', categorySchema);
+const categorySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: { type: String },
+  subcategories: [subcategorySchema] // Add subcategories as an array
+});
+
+const Category = mongoose.model('Category', categorySchema);
+export default Category;

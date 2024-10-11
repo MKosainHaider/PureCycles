@@ -2,15 +2,24 @@ import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  price: { type: Number, required: true },
   description: { type: String },
-  stock_quantity: { type: Number, required: true },
-  reorder_level: { type: Number },
-  category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  image: { type: String, required: true }, // Add image field to store image URL
-}, {
-  timestamps: true
+  price: { type: Number, required: true },
+  sale: { type: Number, default: 0 }, // Percentage discount, default 0 means no discount
+  category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+  categoryName: { type: String },
+  subcategory: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory' },
+  subcategoryName: { type: String },
+  discountedPrice: { type: Number }
 });
 
-export default mongoose.model('Product', productSchema);
+productSchema.pre('save', function (next) {
+  if (this.sale > 0) {
+    this.discountedPrice = this.price - (this.price * this.sale / 100); // Calculate the discounted price
+  } else {
+    this.discountedPrice = this.price; // No discount, original price
+  }
+  next();
+});
+
+const Product = mongoose.model('Product', productSchema);
+export default Product;

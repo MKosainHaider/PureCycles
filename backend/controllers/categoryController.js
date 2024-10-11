@@ -1,79 +1,86 @@
-// controllers/categoryController.js
 import Category from '../models/categoryModel.js';
 
-// Helper function to check if user is an admin
-const isAdmin = (user) => user.role === 'admin' || user.role === 'superadmin';
-
-// Create a new category (Admin only)
+// Create a new category with optional subcategories
 export const createCategory = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({ error: 'Access denied' });
-  }
-
-  const { name, description } = req.body;
-
   try {
-    const newCategory = new Category({ name, description });
-    await newCategory.save();
-    res.status(201).json(newCategory);
+    const { name, description, subcategories } = req.body; // Destructure subcategories
+    const category = new Category({
+      name,
+      description,
+      subcategories: subcategories || [] // Set subcategories if provided
+    });
+    await category.save();
+    res.status(201).json(category);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create category' });
+    res.status(400).json({ message: error.message });
   }
 };
-
-// Get all categories (Public)
-export const getCategories = async (req, res) => {
+// Get all categories
+export const getAllCategories = async (req, res) => {
   try {
     const categories = await Category.find();
-    res.json(categories);
+    res.status(200).json(categories);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch categories' });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Get a single category by ID (Public)
+// Get a category by ID
 export const getCategoryById = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
-    if (!category) return res.status(404).json({ error: 'Category not found' });
-    res.json(category);
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    res.status(200).json(category);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch category' });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Update a category (Admin only)
+// Update a category by ID (including subcategories)
 export const updateCategory = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({ error: 'Access denied' });
-  }
-
-  const { name, description } = req.body;
-
   try {
-    const updatedCategory = await Category.findByIdAndUpdate(
-      req.params.id,
-      { name, description },
-      { new: true }
-    );
-    if (!updatedCategory) return res.status(404).json({ error: 'Category not found' });
-    res.json(updatedCategory);
+    const category = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    res.status(200).json(category);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update category' });
+    res.status(400).json({ message: error.message });
   }
 };
 
-// Delete a category (Admin only)
+// Delete a category by ID
 export const deleteCategory = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({ error: 'Access denied' });
-  }
-
   try {
-    const deletedCategory = await Category.findByIdAndDelete(req.params.id);
-    if (!deletedCategory) return res.status(404).json({ error: 'Category not found' });
-    res.json({ message: 'Category deleted successfully' });
+    const category = await Category.findByIdAndDelete(req.params.id);
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    res.status(200).json({ message: 'Category deleted' });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete category' });
+    res.status(500).json({ message: error.message });
   }
 };
+
+// Add a subcategory to a category
+export const addSubcategory = async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+
+    category.subcategories.push(req.body); // Add subcategory to the array
+    await category.save();
+
+    res.status(201).json(category);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Get subcategories of a category
+export const getSubcategories = async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    res.status(200).json(category.subcategories);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+

@@ -1,70 +1,81 @@
-import axios from "axios";
+import axios from 'axios';
 
-// Function to get Axios config with optional credentials
-const getConfig = (includeCredentials = false) => ({
-  headers: {
-    "Content-Type": "application/json",
-  },
-  ...(includeCredentials ? { withCredentials: true } : {}),
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/products'; // Use environment variables
+
+// Utility function to get authorization headers
+const getAuthHeaders = () => ({
+  Authorization: `Bearer ${localStorage.getItem('token')}`, // Ensure token is fetched consistently
 });
 
-// Create a new product (Admin only)
+// Create a new product
 export const createProduct = async (productData) => {
   try {
-    const config = getConfig(true); // Include credentials for admin
-    const { data } = await axios.post("/api/products", productData, config);
-    console.log("Product created successfully:", data);
-    return data;
+    const response = await axios.post(API_URL, productData, {
+      headers: {
+        ...getAuthHeaders(), // Get authorization headers
+      },
+    });
+    return response.data;
   } catch (error) {
-    console.error("Error creating product:", error.response?.data?.message || error.message);
-    throw error.response?.data || error.message;
+    handleError(error); // Improved error handling
   }
 };
 
-// Fetch all products (Public)
+// Get all products
 export const getProducts = async () => {
   try {
-    const { data } = await axios.get("/api/products");
-    return data;
+    const response = await axios.get(API_URL);
+    return response.data;
   } catch (error) {
-    console.error("Error fetching products:", error.response?.data?.message || error.message);
-    throw error.response?.data || error.message;
+    handleError(error);
   }
 };
 
-// Fetch a product by ID (Public)
-export const getProductById = async (productId) => {
+// Get a product by ID
+export const getProductById = async (id) => {
   try {
-    const { data } = await axios.get(`/api/products/${productId}`);
-    return data;
+    const response = await axios.get(`${API_URL}/${id}`);
+    return response.data;
   } catch (error) {
-    console.error("Error fetching product:", error.response?.data?.message || error.message);
-    throw error.response?.data || error.message;
+    handleError(error);
   }
 };
 
-// Update a product (Admin only)
-export const updateProduct = async (productId, productData) => {
+// Update a product
+export const updateProduct = async (id, productData) => {
   try {
-    const config = getConfig(true); // Include credentials for admin
-    const { data } = await axios.put(`/api/products/${productId}`, productData, config);
-    console.log("Product updated successfully:", data);
-    return data;
+    const response = await axios.put(`${API_URL}/${id}`, productData, {
+      headers: {
+        ...getAuthHeaders(), // Get authorization headers
+      },
+    });
+    return response.data;
   } catch (error) {
-    console.error("Error updating product:", error.response?.data?.message || error.message);
-    throw error.response?.data || error.message;
+    handleError(error);
   }
 };
 
-// Delete a product (Admin only)
-export const deleteProduct = async (productId) => {
+// Delete a product
+export const deleteProduct = async (id) => {
   try {
-    const config = getConfig(true); // Include credentials for admin
-    const { data } = await axios.delete(`/api/products/${productId}`, config);
-    console.log("Product deleted successfully:", data);
-    return data;
+    const response = await axios.delete(`${API_URL}/${id}`, {
+      headers: {
+        ...getAuthHeaders(), // Get authorization headers
+      },
+    });
+    return response.data;
   } catch (error) {
-    console.error("Error deleting product:", error.response?.data?.message || error.message);
-    throw error.response?.data || error.message;
+    handleError(error);
+  }
+};
+
+// Centralized error handler
+const handleError = (error) => {
+  if (error.response && error.response.data) {
+    // If there is a response from the server, throw that message
+    throw new Error(error.response.data.message || 'Something went wrong');
+  } else {
+    // If no response, throw a generic error message
+    throw new Error('Network error or server did not respond');
   }
 };
