@@ -1,9 +1,15 @@
 import Product from '../models/productModel.js';
 import Category from '../models/categoryModel.js';
 
+// Create a new product
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, sale, categoryName, subcategoryName } = req.body;
+    const { name, description, price, sale, categoryName, subcategoryName, colors, images } = req.body;
+
+    // Validate required fields
+    if (!name || !price) {
+      return res.status(400).json({ message: 'Name and price are required' });
+    }
 
     let category = null;
     let subcategory = null;
@@ -11,14 +17,12 @@ export const createProduct = async (req, res) => {
     // If subcategory name is provided, search for it
     if (subcategoryName) {
       if (categoryName) {
-        // If both category and subcategory are provided, find the category first
         category = await Category.findOne({ name: categoryName });
         if (!category) {
           return res.status(404).json({ message: 'Category not found' });
         }
         subcategory = category.subcategories.find(sub => sub.name.toLowerCase() === subcategoryName.toLowerCase());
       } else {
-        // If only subcategory is provided, find the category that contains the subcategory
         category = await Category.findOne({ 'subcategories.name': subcategoryName });
         if (category) {
           subcategory = category.subcategories.find(sub => sub.name.toLowerCase() === subcategoryName.toLowerCase());
@@ -36,21 +40,21 @@ export const createProduct = async (req, res) => {
       return res.status(400).json({ message: 'Product already exists in this subcategory' });
     }
 
-    // Create a new product with the sale percentage and link to category/subcategory
     const product = new Product({
       name,
       description,
       price,
-      sale: sale || 0, // Sale percentage, default to 0 if not provided
-      category: category?._id || null, // If category exists, assign its ID, otherwise null
+      sale: sale || 0,
+      colors: colors || [],
+      images: images || [],
+      category: category?._id || null,
       categoryName: category?.name || null,
-      subcategory: subcategory?._id || null, // If subcategory exists, assign its ID, otherwise null
+      subcategory: subcategory?._id || null,
       subcategoryName: subcategory?.name || null,
     });
 
     await product.save();
 
-    // Return the created product data
     res.status(201).json({
       message: 'Product created successfully',
       product: {
@@ -58,16 +62,111 @@ export const createProduct = async (req, res) => {
         description: product.description,
         price: product.price,
         sale: product.sale,
-        discountedPrice: product.sale
-          ? (product.price - (product.price * product.sale) / 100).toFixed(2)
-          : product.price, // Calculate discounted price if sale exists
+        discountedPrice: product.discountedPrice,
+        colors: product.colors,
+        images: product.images,
         categoryId: product.category,
         categoryName: product.categoryName,
         subcategoryId: product.subcategory,
-        subcategoryName: product.subcategoryName,
+        subcategoryName: product.subcategoryName
       }
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+// Get all products
+export const getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find()
+      .populate('category', 'name') // Populate category name only
+      .populate('subcategory', 'name'); // Populate subcategory name only
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get a product by ID
+export const getProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+      .populate('category', 'name')
+      .populate('subcategory', 'name');
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update a product by ID
+export const updateProduct = async (req, res) => {
+  try {
+    const { name, description, price, sale, colors, images } = req.body;
+
+    // Validate required fields
+    if (!name || !price) {
+      return res.status(400).json({ message: 'Name and price are required' });
+    }
+
+    const product = await Product.findByIdAndUpdate(req.params.id, {
+      name,
+      description,
+      price,
+      sale,
+      colors,
+      images
+    }, { new: true });
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json({
+      message: 'Product updated successfully',
+      product
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Delete a product by ID
+export const deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.status(200).json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Delete a product by name
+export const deleteProductByName = async (req, res) => {
+  try {
+    const { name } = req.body; // Expecting name in the request body
+
+    // Validate required fields
+    if (!name) {
+      return res.status(400).json({ message: 'Product name is required' });
+    }
+
+    const product = await Product.findOneAndDelete({ name });
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

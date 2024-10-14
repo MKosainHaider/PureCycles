@@ -7,7 +7,8 @@ import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js'; // Import category routes if needed
-import cartRoutes from './routes/cartRouters.js';
+import cartRoutes from './routes/cartRouters.js'; // Note: It should be cartRoutes.js
+
 dotenv.config();
 const app = express();
 

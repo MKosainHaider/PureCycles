@@ -1,9 +1,8 @@
-import User from '../models/userModel.js';
+import User from '../models/userModel.js'; // Ensure the correct path to the User model
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-// Register a new user (Public registration)
-
+// Register a new user
 export const register = async (req, res) => {
   try {
     const { email, password, username } = req.body;
@@ -11,7 +10,6 @@ export const register = async (req, res) => {
     // Check if email already exists
     const isEmailExisted = await User.findOne({ email });
     if (isEmailExisted) {
-      console.log('Registration attempt failed: Email already exists');
       return res.status(400).json({ message: 'Email already exists' });
     }
 
@@ -21,18 +19,12 @@ export const register = async (req, res) => {
 
     // Save the user to the database
     await newUser.save();
-
-    // Log the registered user to the console
-    console.log('User registered successfully:', newUser);
-
-    // Respond to the client
     res.status(201).json({ message: 'User registered successfully', user: newUser });
   } catch (error) {
-    console.error('Failed to register user:', error);
+    console.error('Error registering user:', error.message);
     res.status(500).json({ error: 'Failed to register user' });
   }
 };
-
 
 // Login a user
 export const login = async (req, res) => {
@@ -48,6 +40,7 @@ export const login = async (req, res) => {
     res.cookie('token', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }); // 1 day expiration
     return res.json({ message: 'Login successful', user });
   } catch (error) {
+    console.error('Error during login:', error.message);
     res.status(500).json({ error: 'Failed to login' });
   }
 };
@@ -60,24 +53,26 @@ export const logout = (req, res) => {
 
 // Create a new user (Admin/Super Admin can create users)
 export const createUser = async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+  const { username, password, email, role } = req.body;
+  
+  if (req.user.role !== 'admin' && req.user.role !== 'super admin') {
     return res.status(403).json({ message: 'Unauthorized' });
   }
 
-  const { username, password, email } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, password: hashedPassword, email });
+    const newUser = new User({ username, password: hashedPassword, email, role });
     await newUser.save();
-    res.status(201).json({ newUser });
+    res.status(201).json({ message: 'User created successfully', user: newUser });
   } catch (error) {
+    console.error('Error creating user:', error.message);
     res.status(500).json({ error: 'Failed to create user' });
   }
 };
 
 // Get all users (Admin/Super Admin can get all users)
 export const getUsers = async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+  if (req.user.role !== 'admin' && req.user.role !== 'super admin') {
     return res.status(403).json({ message: 'Unauthorized' });
   }
 
@@ -85,14 +80,15 @@ export const getUsers = async (req, res) => {
     const users = await User.find().select('-password'); // Exclude password
     res.json(users);
   } catch (error) {
+    console.error('Error fetching users:', error.message);
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 };
 
-// Get a single user by ID (self or Admin/Super Admin can access any user)
+// Get a single user by ID
 export const getUserById = async (req, res) => {
   try {
-    if (req.user._id.toString() !== req.params.id && req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+    if (req.user._id.toString() !== req.params.id && req.user.role !== 'admin' && req.user.role !== 'super admin') {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
@@ -100,15 +96,16 @@ export const getUserById = async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);
   } catch (error) {
+    console.error('Error fetching user by ID:', error.message);
     res.status(500).json({ error: 'Failed to fetch user' });
   }
 };
 
-// Update a user (self or Admin/Super Admin can update any user)
+// Update a user
 export const updateUser = async (req, res) => {
   const { username, email, role } = req.body;
 
-  if (req.user._id.toString() !== req.params.id && req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+  if (req.user._id.toString() !== req.params.id && req.user.role !== 'admin' && req.user.role !== 'super admin') {
     return res.status(403).json({ message: 'Unauthorized' });
   }
 
@@ -121,13 +118,14 @@ export const updateUser = async (req, res) => {
     if (!updatedUser) return res.status(404).json({ error: 'User not found' });
     res.json(updatedUser);
   } catch (error) {
+    console.error('Error updating user:', error.message);
     res.status(500).json({ error: 'Failed to update user' });
   }
 };
 
-// Delete a user (self or Admin/Super Admin can delete any user)
+// Delete a user
 export const deleteUser = async (req, res) => {
-  if (req.user._id.toString() !== req.params.id && req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+  if (req.user._id.toString() !== req.params.id && req.user.role !== 'admin' && req.user.role !== 'super admin') {
     return res.status(403).json({ message: 'Unauthorized' });
   }
 
@@ -136,7 +134,8 @@ export const deleteUser = async (req, res) => {
     if (!delUser) return res.status(404).json({ error: 'User not found' });
     res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error deleting user:', error.message);
+    res.status(500).json({ error: 'Failed to delete user' });
   }
 };
 
@@ -148,10 +147,10 @@ export const getProfile = async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);
   } catch (error) {
+    console.error('Error fetching profile:', error.message);
     res.status(500).json({ error: 'Failed to fetch user profile' });
   }
 };
-
 
 // Update user profile
 export const updateProfile = async (req, res) => {
@@ -166,8 +165,7 @@ export const updateProfile = async (req, res) => {
     if (!updatedUser) return res.status(404).json({ error: 'User not found' });
     res.json(updatedUser);
   } catch (error) {
+    console.error('Error updating profile:', error.message);
     res.status(500).json({ error: 'Failed to update profile' });
   }
 };
-
-
